@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="navbar.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <ul class="topnav">
+      <li>
+        <a class="logo" href="index.html"
+          ><img src="../assets/FinalProjectLogo.png" alt="Final Project"
+        /></a>
+      </li>
+      <li class="right">
+        <a href="basket.html"
+          ><img src="../assets/cart.svg" alt="Cart" /><span id="cart-count"
+            >1</span
+          ></a
+        >
+      </li>
+      <li class="right">
+        <a href="index.html"
+          ><img src="../assets/person.svg" alt="Account"
+        /></a>
+      </li>
+      <li class="right"><a href="login.html">Login</a></li>
+      <li class="right"><a href="trackorder.html">Track Order</a></li>
+    </ul>
+
+    <div id="orderList"></div>
+  </body>
+  <script src="configurations.js"></script>
+  <script>
+    let host = getHost();
+    let orders = [];
+    displayOrders();
+    emptyBasket();
+
+    async function getOrders(token) {
+      try {
+        let response = await fetch(`${host}/orders/item`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    }
+
+    async function displayOrders() {
+      let token = configuration.token();
+      try {
+        orders = await getOrders(token);
+        const orderList = document.getElementById("orderList");
+        orderList.innerHTML = "";
+
+        if (orders && orders.length > 0) {
+          for (let order of orders) {
+            let response = await fetch(`${host}/flowers/${order.flowerId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            let result = await response.json();
+            let flowerName = result.name;
+            let flowerCost = result.cost;
+
+            let response2 = await fetch(
+              `${host}/orders/recipient/${order.recipientId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            let result2 = await response2.json();
+            console.log(result2);
+            let recipientName = result2.firstName + " " + result2.lastName;
+            // Do something with the result
+
+            const div = document.createElement("div");
+            console.log(order);
+            div.className = "order-card";
+            div.innerHTML = `
+                      <h3>Order ID: ${order.id}</h3>
+                      <p>Flower Name: ${flowerName}</p>
+                      <p>Recipient Name: ${recipientName}</p>
+                      <p>Total Cost: $${flowerCost}</p>
+                      <p>Status: "submitted"</p>
+                      `;
+            orderList.appendChild(div);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    }
+
+    //   let token = configuration.token();
+    //   try {
+    //     orders = await getOrders(token);
+    //     const orderList = document.getElementById("orderList");
+    //     orderList.innerHTML = "";
+
+    //     if (orders && orders.length > 0) {
+    //       orders.forEach((order) => {
+    //         let response = await fetch(`${host}/flowers/${order.flowerId}`, {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     });
+    //     let result = await response.json();
+
+    //         const div = document.createElement("div");
+    //         console.log(order);
+    //         div.className = "order-card";
+    //         div.innerHTML = `
+    //                   <h3>Order ID: ${order.id}</h3>
+    //                   <p>Flower Name: ${order.flowerName}</p>
+    //                   <p>Recipient Name: ${order.recipientName}</p>
+    //                   <p>Total Cost: $${order.totalCost}</p>
+    //                   <p>Status: ${order.status}</p>
+    //                   `;
+    //         orderList.appendChild(div);
+    //       });
+    //     } else {
+    //       orderList.innerHTML = "<p>No orders found.</p>";
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching or displaying orders:", error);
+    //     const orderList = document.getElementById("orderList");
+    //     orderList.innerHTML = "<p>Failed to fetch or display orders.</p>";
+    //   }
+    // }
+  </script>
+</html>

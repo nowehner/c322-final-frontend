@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="login.css" />
+        <link rel="stylesheet" href="navbar.css">
+        <title>Forms</title>
+      </head>
+      <body>
+        <  <body>
+            <ul class="topnav">
+              <li><a class="logo" href="index.html"><img src="../assets/FinalProjectLogo.png" alt="Final Project"></a></li>
+              <li class="right"><a href="basket.html"><img src="../assets/cart.svg" alt="Cart"><span id="cart-count">0</span></a></li>
+              <li class="right"><a href="login.html"><img src="../assets/person.svg" alt="Account"></a></li>
+              <li class="right"><a href="index.html">Login</a></li>
+              <li class="right"><a href="trackorder.html">Track Order</a></li>
+            </ul>
+      <a href="index.html" style="font-size: larger; color: orange; text-decoration: none;">Flower.com</a>
+
+        <div class="login-wrap">
+          <div class="login-html">
+            <input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
+            <input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
+            <div class="login-form">
+              <div class="sign-up-htm">
+
+                <div class="group">
+                  <label for="pass" class="label">Email</label>
+                  <input id="email-signup" type="text" class="input">
+                </div>
+                
+                <div class="group">
+                  <label for="pass" class="label">Password</label>
+                  <input id="password-signup" type="password" class="input" data-type="password">
+                </div>
+
+                <!-- <div class="group">
+                  <input id="check-signup" type="checkbox" class="check" onclick="togglePasswordVisibility('password-signup')">
+                  <label for="check-signup"><span class="icon"></span>Show Password</label>
+                </div> -->
+              
+                <div class="group">
+                  <input type="submit"  class="button" value="Sign Up" onclick="signup()">
+                </div>
+                <div class="hr"></div>
+              </div>
+
+
+              <div class="sign-in-htm">
+                <div class="group">
+                  <label for="email-login" class="label">Email</label>
+                  <input id="email-login" type="text" class="input">
+                </div>
+
+                <div class="group">
+                  <label for="password-login" class="label">Password</label>
+                  <input id="password-login" type="password" class="input" data-type="password">
+                </div>
+
+                <!-- <div class="group">
+                  <input id="check-signin" type="checkbox" class="check" onclick="togglePasswordVisibility('password-signin')">
+                  <label for="check-signin"><span class="icon"></span>Show Password</label>
+                </div> -->
+
+                <div class="group">
+                  <input type="submit" class="button" value="Sign In" onclick="login()">
+                </div>
+                <div class="hr"></div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      </body>
+      <script src="configurations.js"></script>
+</html>

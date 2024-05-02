@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="navbar.css" />
+    <link rel="stylesheet" href="filter.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="card.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <ul class="topnav">
+      <li>
+        <a class="logo" href="index.html"
+          ><img src="../assets/FinalProjectLogo.png" alt="Final Project"
+        /></a>
+      </li>
+      <li class="right">
+        <a href="basket.html"
+          ><img src="../assets/cart.svg" alt="Cart" /><span id="cart-count"
+            >0</span
+          ></a
+        >
+      </li>
+      <li class="right">
+        <a href="index.html"
+          ><img src="../assets/person.svg" alt="Account"
+        /></a>
+      </li>
+      <li class="right"><a href="login.html">Login</a></li>
+      <li class="right"><a href="trackorder.html">Track Order</a></li>
+    </ul>
+    <header class="header">
+      <div class="header-text">
+        <h1>Send Her Blooms</h1>
+        <p>She will love it! Shop All Mother's Day Flowers and Gifts!</p>
+      </div>
+      <div class="header-image">
+        <img src="../assets/bouqs.png" alt="Flower Arrangement" />
+      </div>
+    </header>
+
+    <div class="filter-bar">
+      <div class="filters">
+        <label for="flower-type">FILTER</label>
+        <select id="flower-type" onchange="updateSelectedType()">
+          <option class="placeholder" disabled selected>Flower Type</option>
+          <!-- Options go here -->
+          <option value="Mixed">Mixed</option>
+          <option value="Roses">Roses</option>
+          <option value="Lilies">Lilies</option>
+          <option value="Tulips">Tulips</option>
+          <option value="Daisies">Daisies</option>
+        </select>
+
+        <select id="occasion" onchange="updateSelectedOccasion()">
+          <!-- Options go here -->
+          <option class="placeholder" disabled selected>Occasion</option>
+          <option value="Mother's Day">Mother's Day</option>
+          <option value="Birthday">Birthday</option>
+          <option value="Thank You">Thank You</option>
+        </select>
+
+        <select id="color" onchange="updateSelectedColor()">
+          <!-- Options go here -->
+          <option class="placeholder" disabled selected>Color</option>
+          <option value="Red">Red</option>
+          <option value="Yellow">Yellow</option>
+          <option value="Green">Green</option>
+          <option value="Orange">Orange</option>
+          <option value="Mixed">Mixed</option>
+        </select>
+      </div>
+
+      <div class="sort">
+        <label for="sort">SORT</label>
+        <select id="sort" onchange="updateLowToHigh()">
+          <option value="price-low-high">Price: Low to High</option>
+          <option value="price-high-low">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="f-container" id="flowerList"></div>
+
+    <div id="list"></div>
+
+    <script src="configurations.js"></script>
+    <script>
+      let selectedColor = null;
+      let selectedOccasion = null;
+      let selectedType = null;
+
+      function updateSelectedColor() {
+        // Select the dropdown element
+        const colorSelect = document.getElementById("color");
+        // Get the selected value
+        selectedColor = colorSelect.value;
+        // Log the selected color for demonstration
+        // console.log("Selected color:", selectedColor);
+
+        displayTheFlowers();
+      }
+
+      function updateSelectedOccasion() {
+        // Select the dropdown element
+        const occasionSelect = document.getElementById("occasion");
+        // Get the selected value
+        selectedOccasion = occasionSelect.value;
+        // Log the selected color for demonstration
+        // console.log("Selected occasion:", selectedOccasion);
+
+        displayTheFlowers();
+      }
+
+      function updateSelectedType() {
+        // Select the dropdown element
+        const typeSelect = document.getElementById("flower-type");
+        // Get the selected value
+        selectedType = typeSelect.value;
+        // Log the selected color for demonstration
+        // console.log("Selected type:", selectedType);
+
+        displayTheFlowers();
+      }
+
+      function updateLowToHigh() {
+        // Select the dropdown element
+        const sortSelect = document.getElementById("sort");
+        // Get the selected value
+        selectedSort = sortSelect.value != "price-high-low";
+        // Log the selected color for demonstration
+        console.log("low to high:", selectedSort);
+
+        displayTheFlowers();
+      }
+
+      let host = getHost();
+      let flowers = [];
+
+      // let selectedColor = "Red";
+      displayTheFlowers();
+
+      // Function to update the selectedColor variable
+      async function getAll() {
+        let searchFlower = {
+          color: selectedColor,
+          occasion: selectedOccasion,
+          type: selectedType,
+        };
+
+        console.log(searchFlower);
+
+        let lowToHigh =
+          document.getElementById("sort").value === "price-low-high";
+
+        let request = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${configuration.token()}`,
+          },
+          body: JSON.stringify(searchFlower),
+        };
+
+        console.log(request);
+
+        // let response = await fetch(
+        //   host + "/flowers/search?lowToHigh=${lowToHigh}",
+        //   request
+        // );
+        let searchParam = lowToHigh ? "true" : "false";
+        let url = `${host}/flowers/search/${searchParam}`;
+
+        let response = await fetch(url, request);
+
+        if (response.status == 401) {
+          logout();
+        }
+        let result = await response.json();
+
+        console.log(result);
+        return result;
+      }
+
+      async function displayTheFlowers() {
+        try {
+          let flowersData = await getAll();
+          let list = document.getElementById("list");
+          list.innerHTML = "";
+
+          for (let flower of flowersData) {
+            let div = document.createElement("div");
+            div.id = `${flower.id}`;
+            div.className = "f-card";
+            div.onclick = function () {
+              location.href = `basket.html?id=${flower.id}`;
+            };
+            let innerHtml = `
+              <div class="container">
+                <img src="${getHost()}/flowers/${flower.id}/image" alt="${
+              flower.name
+            }">
+                <p>${flower.name}</p>
+                <p>(from $ ${flower.cost})</p>
+              </div>`;
+            div.innerHTML = innerHtml;
+            list.appendChild(div);
+          }
+        } catch (error) {
+          console.error("Error displaying flowers:", error);
+        }
+      }
+
+      function filter() {
+        let flowerType = document.querySelector(
+          'select[name="flowerType"]'
+        ).value;
+        let occasion = document.querySelector('select[name="occasion"]').value;
+        let color = document.querySelector('select[name="color"]').value;
+        let sortBy = document.querySelector('select[name="sortBy"]').value;
+
+        let filteredFlowers = flowers.filter((flower) => {
+          if (flowerType && flower.type !== flowerType) {
+            return false;
+          }
+          if (occasion && flower.occasion !== occasion) {
+            return false;
+          }
+          if (color && flower.color !== color) {
+            return false;
+          }
+          return true;
+        });
+
+        if (sortBy === "DESC") {
+          filteredFlowers.sort((a, b) => b.cost - a.cost);
+        } else if (sortBy === "ASC") {
+          filteredFlowers.sort((a, b) => a.cost - b.cost);
+        }
+
+        displayTheFlowers(filteredFlowers);
+      }
+
+      // displayTheFlowers();
+    </script>
+  </body>
+</html>

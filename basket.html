@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="navbar.css" />
+    <link rel="stylesheet" href="index.css" />
+    <script src="configurations.js"></script>
+    <title>Add to Basket</title>
+    <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .flower-details {
+        flex: 1;
+        padding-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <ul class="topnav">
+      <li>
+        <a class="logo" href="index.html"
+          ><img src="../assets/FinalProjectLogo.png" alt="Final Project"
+        /></a>
+      </li>
+      <li class="right">
+        <a href="basket.html"
+          ><img src="../assets/cart.svg" alt="Cart" /><span id="cart-count"
+            >0</span
+          ></a
+        >
+      </li>
+      <li class="right">
+        <a href="index.html"
+          ><img src="../assets/person.svg" alt="Account"
+        /></a>
+      </li>
+      <li class="right"><a href="login.html">Login</a></li>
+      <li class="right"><a href="trackorder.html">Track Order</a></li>
+    </ul>
+
+    <!-- <a
+      href="index.html"
+    > -->
+    <hr />
+
+    <div class="container">
+      <div class="flower-details" id="flowerDetails"></div>
+
+      <div class="delivery">
+        <label for="deliveryDate">Delivery:</label>
+        <input type="date" id="delivery" required />
+
+        <br />
+
+        <label>Purchase:</label>
+
+        <div class="purchase-options">
+          <label class="purchase-option">
+            <input
+              type="radio"
+              name="purchaseOption"
+              value="oneTimePurchase"
+              checked
+            />
+            One Time Purchase ($<span id="oneTimePrice"></span>)
+            <span class="checkmark"></span>
+          </label>
+          <br />
+          <label class="purchase-option">
+            <input type="radio" name="purchaseOption" value="sub" />
+            Start a Subscription ($<span id="subPrice"></span>)
+            <span class="checkmark"></span>
+          </label>
+        </div>
+
+        <button
+          onclick="addToBasket()"
+          style="background-color: white; color: black; border: 2px solid black"
+        >
+          Add to Basket
+        </button>
+      </div>
+    </div>
+  </body>
+  <script src="configurations.js"></script>
+  <script>
+    const host = getHost();
+
+    window.onload = function () {
+      displayFlowerDetails();
+    };
+
+    async function displayFlowerDetails() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const flowerId = urlParams.get("id");
+
+      try {
+        const response = await fetch(`${host}/flowers/${flowerId}`);
+        const flowerData = await response.json();
+
+        const imageUrl = `${host}/flowers/${flowerId}/image`;
+
+        const flowerDetailsContainer = document.getElementById("flowerDetails");
+        flowerDetailsContainer.innerHTML = `
+              <h2>${flowerData.name}</h2>
+              <img src="${imageUrl}" alt="${flowerData.name}" style="max-width: 25%; height: 5;">
+          `;
+
+        const updatedPrice = flowerData.cost + 25;
+        const subPrice = flowerData.cost - 10;
+
+        document.getElementById("oneTimePrice").textContent = updatedPrice;
+        document.getElementById("subPrice").textContent = subPrice;
+        console.log(flowerData.name);
+        localStorage.setItem("flowerName", flowerData.name);
+        localStorage.setItem("flowerImage", imageUrl);
+        localStorage.setItem("flowerId", flowerData.id);
+      } catch (error) {
+        console.error("Error fetching flower details:", error);
+      }
+    }
+
+    function addToBasket() {
+      const oneTimePurchaseOption = document.querySelector(
+        'input[name="purchaseOption"][value="oneTimePurchase"]'
+      );
+      const subOption = document.querySelector(
+        'input[name="purchaseOption"][value="sub"]'
+      );
+
+      let selectedPrice = 0;
+      if (oneTimePurchaseOption.checked) {
+        selectedPrice = parseFloat(
+          document.getElementById("oneTimePrice").textContent
+        );
+      } else if (subOption.checked) {
+        selectedPrice = parseFloat(
+          document.getElementById("subPrice").textContent
+        );
+      }
+      console.log("Selected price:", selectedPrice);
+
+      const deliveryDate = document.getElementById("delivery").value;
+
+      localStorage.setItem("purchasePrice", selectedPrice);
+      localStorage.setItem("deliveryDate", deliveryDate);
+
+      window.location.href = "adddelivery.html";
+    }
+  </script>
+</html>

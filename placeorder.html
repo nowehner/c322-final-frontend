@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" href="navbar.css" />
+    <link rel="stylesheet" href="placeorder.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="cart.html"><i class="fa fa-fw fa-shopping-cart"></i> </a>
+      <li>
+        <a href="placeorder.html"><span id="itemCount">1</span></a>
+      </li>
+      <a href="login.html"><i class="fa fa-fw fa-user"></i> </a>
+      <a href="index.html">Login</a>
+      <a href="trackorder.html">Track Order</a>
+    </div>
+
+    <div id="summary"></div>
+
+    <button class="button" onclick="order()">Order</button>
+  </body>
+  <script src="configurations.js"></script>
+  <script>
+    let host = getHost();
+    let cartItem = JSON.parse(localStorage.getItem("cartItem")) || {};
+    let info = JSON.parse(localStorage.getItem("info")) || {};
+    let purchasePrice = parseFloat(localStorage.getItem("purchasePrice"));
+    let deliveryDate = localStorage.getItem("deliveryDate");
+    let flowerId = localStorage.getItem("flowerId");
+
+    let summary = document.getElementById("summary");
+    let totalCost = purchasePrice + 25;
+    let deliveryDiscount = isLoggedIn() ? 10 : 0;
+
+    summary.innerHTML = `
+    <img src="${localStorage.getItem(
+      "flowerImage"
+    )}" alt="Flower Image" style="max-width: 25%; height: 5;">
+
+        <h3>Delivery Date</h3>
+        <p>${deliveryDate}</p>
+        <h3>Item Pricing</h3>
+        <p>$${purchasePrice - 25}</p>
+        <h3>Delivery Address</h3>
+        <p>${info.firstName} ${info.lastName}</p>
+        <p>${info.apt ? info.apt + " " : ""}${info.address}</p>
+        <p>${info.city} ${info.state} ${info.zip}</p>
+
+        <h3>Subtotal</h3>
+        <p>Delivery: $25.00</p>
+        <p>Delivery Discount: -$${deliveryDiscount}</p>
+        <p>Tax: $0.00</p>
+        <p>Order Total: $${purchasePrice - deliveryDiscount}</p>
+    `;
+    // console.log(cartItem);
+
+    async function order() {
+      try {
+        // let orderData = {
+        //   flowerId: cartItem.flowerId,
+        //   flowerName: cartItem.flowerName,
+        //   recipientName: ` ${info.lastName}`,
+        //   totalCost: purchasePrice,
+        //   status: "DONE",
+        //   customerUserName: configuration.isLoggedIn()
+        //     ? getLoggedInUsername()
+        //     : null,
+        // };
+        let addressData = {
+          address: info.address,
+          aptSuite: info.apt,
+          city: info.city,
+          state: info.state,
+          zipCode: info.zip,
+        };
+        let request2 = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${configuration.token()}`,
+          },
+          body: JSON.stringify(addressData),
+        };
+        let response2 = await fetch(`${host}/orders/address`, request2);
+        let addressId = await response2.json();
+
+        let recipientData = {
+          firstName: info.firstName,
+          lastName: info.lastName,
+          relationship: info.relationship,
+        };
+        let request1 = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${configuration.token()}`,
+          },
+          body: JSON.stringify(recipientData),
+        };
+        let response1 = await fetch(`${host}/orders/recipient`, request1);
+        let recipientId = await response1.json();
+
+        let orderData = {
+          totalCost: totalCost,
+          date: new Date(),
+          status: "submitted",
+        };
+
+        console.log(orderData);
+
+        let request = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${configuration.token()}`,
+          },
+          body: JSON.stringify(orderData),
+        };
+        let response = await fetch(`${host}/orders`, request);
+        let orderId = await response.json();
+
+        let orderItemData = {
+          flowerId: flowerId,
+          recipientId: recipientId,
+          orderId: orderId,
+          deliveryDate: localStorage.getItem("deliveryDate"),
+          recipientAddressId: addressId,
+        };
+
+        let request3 = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${configuration.token()}`,
+          },
+          body: JSON.stringify(orderItemData),
+        };
+        let response3 = await fetch(`${host}/orders/item`, request3);
+        let result = await response3.json();
+
+        if (response.ok) {
+          alert("Order placed successfully!");
+          localStorage.removeItem("cartItem");
+          localStorage.removeItem("delivery");
+          window.location.href = "trackorder.html";
+          document.getElementById("itemCount").textContent = 0;
+        } else {
+          throw new Error("Failed to place order");
+        }
+      } catch (error) {
+        console.error("An error occurred while placing the order:", error);
+        alert("An error occurred. Please try again.");
+      }
+    }
+  </script>
+</html>
