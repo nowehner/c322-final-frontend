@@ -18,12 +18,11 @@ function isLoggedIn() {
 
 function saveTheToken(token) {
   localStorage.setItem("token", token);
-  updateTheNavigationBar();
+  
 }
 
 function removeTheToken() {
   localStorage.removeItem("token");
-  updateTheNavigationBar();
 }
 
 function getTheToken() {
